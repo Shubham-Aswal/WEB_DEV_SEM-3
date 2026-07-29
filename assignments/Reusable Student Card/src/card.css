@@ -1,0 +1,17 @@
+.main{
+    display: flex;
+    border: 1px solid silver;
+    padding : 30px;
+    justify-content: center;
+    align-items: center;
+    gap : 30px;
+    margin :20px;
+
+    flex-direction: column;
+}
+.card {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border: 2px solid red;
+}
