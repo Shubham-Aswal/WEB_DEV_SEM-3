@@ -85,7 +85,7 @@ app.post("/login",async (req,res)=>{
             email: user.email,
             role: user.role
     },"abcdefgh")
-    localStorage.setItem("access_token",wbToken)
+    
     res.status(200).json({"msg" : "user loggedin successfully",data : {wbToken}})
 })
 
@@ -94,29 +94,36 @@ app.get("/api",auth,roleCheck("admin"),(req,res)=>{
 })
  
 
+app.get("/me",auth,async (req,res)=>{
+    let data = req.user
+    res.send(data)
+})
 
 
+app.put("/me",auth,async(req,res)=>{
+    const {newName} = req.body;
 
+    const user = await User.findByIdAndUpdate(req.user._id,{name : newName},{new : true})
+    console.log(user)
+    if(!user){
+        res.send('unable to update user name')
+    }
+    filterUser = user.select("- password")
+    res.send(filterUser)
+})
 
-// 123 => abc => acb
+app.patch("/users/:id/role",auth,roleCheck('admin'),async (req,res)=>{
+    let {id} = req.params
+    let {newRole} = req.body 
 
+    let user = await User.findOneAndUpdate({email : req.user.email},{role : newRole})
+    if(!user){
+        res.send("invalid user")
+    }
+    res.send("role updated successfully")
 
+})
 
-
-// app.post('/',async(req,res)=>{
-//    let {name,email,passWord}=req.body
-
-//  let UserData=  new User({
-//       name,email,passWord
-//    })
-//      await UserData.save()
-//      res.send("doneeee")
-
-
-//    // console.log(name,email,passWord);
-   
-
-// })
 
 
 app.listen(3000,()=>{
