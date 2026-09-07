@@ -1,21 +1,17 @@
-import mongoose from "mongoose";
-
+import mongoose from 'mongoose'
+import { type } from 'node:os';
 
 const userSchema = new mongoose.Schema({
-    name : { 
-        type : String
-    },
-    email : { 
-        type :String
-    },
-    password : {
-        type : String
-    },
-    role :{
+    name : String,
+    password : String,
+    email : String,
+    role : {
         type : String,
-        enum : ['user','admin']
+        enum : ['user','admin'],
+        default : 'user'
     }
 })
 
- const User = mongoose.model("user",userSchema)
- export default User
+const User = mongoose.model("user",userSchema);
+export {User}
+
