@@ -2,10 +2,15 @@ import express from "express"
 import bcryptjs from "bcryptjs"
 import {User} from "./db/db.js"
 import { error } from "node:console"
+import cors from "cors"
 import mongoose from "mongoose"
+import jwt from "jsonwebtoken"
 const app = express()
 
 app.use(express.json())
+app.use(cors())
+
+// this file contains content of class 13 and 14
 
 
 mongoose.connect("mongodb://localhost:27017/vedamTest").then(()=>{
@@ -14,9 +19,9 @@ mongoose.connect("mongodb://localhost:27017/vedamTest").then(()=>{
 
 
 
-app.post("/signUp", async(req,res)=>{
-   let {name,email,passWord}=req.body
-  let findData=   await User.findOne({email})
+app.post("/signup", async(req,res)=>{
+   let {name,email,passWord,role}=req.body
+  let findData= await User.findOne({email})
   console.log(findData,"hjehehe");
   
   if(findData){
@@ -27,30 +32,68 @@ app.post("/signUp", async(req,res)=>{
      
  let UserInfo=  new User({
       name,email,
-      passWord:updateddP
+      password:updateddP,
+      role :  role || 'user'
 
    })
       await UserInfo.save()
-      res.send("done.......")
+      return res.send("done.......")
   }
 
 
 })
-
+const auth = (req,res,next)=>{
+    let token  = req.headers.authorization;
+    if(!token){
+        return res.send("invalid access...")
+    }
+    let data = jwt.verify(token,"abcdefgh")
+    console.log(data)
+    req.user = data
+    next()
+}
+function roleCheck(Role){
+    return (req,res,next)=>{
+    let role = req.user.role
+    console.log(role)
+    if(Role != role){
+         res.send("unauthorized user .. ")
+    }
+    next()
+   
+    }
+}
 
 app.post("/login",async (req,res)=>{
-    let {email,password} = req.body
+    let {email,passWord} = req.body
 
     let user = await User.findOne({email})
     if(!user){
         res.send("user already exist")
     }
-    let checkPassword = bcryptjs.compare(password,user.password)
+    try {
+         let checkPassword =  bcryptjs.compare(passWord,user.password)
     if(!checkPassword){
         res.send("invalid password")
     }
-    res.status(200).json({"msg" : "user loggedin successfully"})
+        
+    } catch  {
+        res.send("password not valid")
+        
+    }
+    let wbToken = jwt.sign({
+            email: user.email,
+            role: user.role
+    },"abcdefgh")
+    localStorage.setItem("access_token",wbToken)
+    res.status(200).json({"msg" : "user loggedin successfully",data : {wbToken}})
 })
+
+app.get("/api",auth,roleCheck("admin"),(req,res)=>{
+    res.send("api access granted")
+})
+ 
+
 
 
 
