@@ -3,8 +3,10 @@ import React from 'react'
 import { useState } from 'react'
 import './App.css'
 import "./Login.css"
+import {  useNavigate } from 'react-router-dom';
 
 const Login = () => {
+    const navigate  = useNavigate()
     const [email,setemail] = useState("");
     const [password,setpass] = useState("");
     async function loginUser(){
@@ -14,9 +16,13 @@ const Login = () => {
         }
         setemail("");
         setpass("")
-        let ress = axios.post("http://localhost:3000/login",data)
+        let ress =await axios.post("http://localhost:3000/login",data)
+        console.log(ress)
         if(ress.status == 200){
+            let token = ress.data.data.wbToken
+            localStorage.setItem("token",token);
             alert("user login success..")
+            navigate("/dashboard")
         }
 
     }

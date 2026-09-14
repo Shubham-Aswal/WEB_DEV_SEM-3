@@ -85,7 +85,7 @@ app.post("/login",async (req,res)=>{
             email: user.email,
             role: user.role
     },"abcdefgh")
-    
+  
     res.status(200).json({"msg" : "user loggedin successfully",data : {wbToken}})
 })
 
@@ -108,8 +108,8 @@ app.put("/me",auth,async(req,res)=>{
     if(!user){
         res.send('unable to update user name')
     }
-    filterUser = user.select("- password")
-    res.send(filterUser)
+    
+    res.send(user)
 })
 
 app.patch("/users/:id/role",auth,roleCheck('admin'),async (req,res)=>{
