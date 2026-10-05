@@ -1,0 +1,16 @@
+{
+  "name": "mid_sem_practice",
+  "version": "1.0.0",
+  "description": "contains solutions of practice problems in mid sem",
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "mongoose": "^9.10.1"
+  }
+}

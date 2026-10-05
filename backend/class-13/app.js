@@ -5,6 +5,7 @@ import { error } from "node:console"
 import cors from "cors"
 import mongoose from "mongoose"
 import jwt from "jsonwebtoken"
+import crypto from "node:crypto"
 const app = express()
 
 app.use(express.json())
@@ -87,6 +88,75 @@ app.post("/login",async (req,res)=>{
     },"abcdefgh")
   
     res.status(200).json({"msg" : "user loggedin successfully",data : {wbToken}})
+})
+
+app.post("/forgot-password", async (req, res) => {
+    const {email} = req.body
+
+    if (!email) {
+        return res.status(400).json({msg: "email is required"})
+    }
+
+    const user = await User.findOne({email})
+    if (!user) {
+        return res.status(200).json({msg: "If the email exists, a reset token has been generated"})
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex")
+    const resetPasswordToken = crypto
+        .createHash("sha256")
+        .update(resetToken)
+        .digest("hex")
+
+    await User.findByIdAndUpdate(user._id, {
+        resetPasswordToken,
+        resetPasswordExpires: new Date(Date.now() + 15 * 60 * 1000)
+    })
+
+    const response = {msg: "If the email exists, a reset token has been generated"}
+    if (process.env.NODE_ENV !== "production") {
+        response.resetToken = resetToken
+    }
+
+    res.status(200).json(response)
+})
+
+app.post("/reset-password", async (req, res) => {
+    const {email, resetToken, newPassword} = req.body
+
+    if (!email || !resetToken || !newPassword) {
+        return res.status(400).json({msg: "email, resetToken and newPassword are required"})
+    }
+
+    if (newPassword.length < 6) {
+        return res.status(400).json({msg: "newPassword must be at least 6 characters"})
+    }
+
+    const resetPasswordToken = crypto
+        .createHash("sha256")
+        .update(resetToken)
+        .digest("hex")
+
+    const user = await User.findOne({
+        email,
+        resetPasswordToken,
+        resetPasswordExpires: {$gt: new Date()}
+    })
+
+    if (!user) {
+        return res.status(400).json({msg: "invalid or expired reset token"})
+    }
+
+    const password = await bcryptjs.hash(newPassword, 10)
+    await User.findByIdAndUpdate(user._id, {
+        password,
+        $unset: {
+            resetPasswordToken: 1,
+            resetPasswordExpires: 1
+        }
+    })
+
+    res.status(200).json({msg: "password reset successfully"})
 })
 
 app.get("/api",auth,roleCheck("admin"),(req,res)=>{

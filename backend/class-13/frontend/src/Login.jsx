@@ -3,7 +3,7 @@ import React from 'react'
 import { useState } from 'react'
 import './App.css'
 import "./Login.css"
-import {  useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Login = () => {
     const navigate  = useNavigate()
@@ -43,7 +43,9 @@ const Login = () => {
                     </label>
                     <button type="button" onClick={loginUser}>Sign in <span>→</span></button>
                 </div>
-                <p className="form-note">Use the account you created to sign in.</p>
+                <p className="form-note">
+                    <Link to="/forgot-password">Forgot your password?</Link>
+                </p>
             </section>
         </main>
   )
